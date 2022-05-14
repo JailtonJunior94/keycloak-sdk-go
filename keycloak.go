@@ -44,10 +44,11 @@ type KeycloakSDK struct {
 
 var httpClient = &http.Client{Timeout: 30 * time.Second}
 
-func NewKeycloakSDK(ctx context.Context, baseURL, username, password string) *KeycloakSDK {
+func NewKeycloakSDK(ctx context.Context, baseURL, username, password string) (*KeycloakSDK, error) {
 	session, err := auth(ctx, baseURL, username, password)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return nil, err
 	}
 
 	keycloakSDK := &KeycloakSDK{
@@ -57,12 +58,15 @@ func NewKeycloakSDK(ctx context.Context, baseURL, username, password string) *Ke
 		Context:  ctx,
 		Session:  session,
 	}
-	return keycloakSDK
+	return keycloakSDK, nil
 }
 
 func main() {
 	ctx := context.Background()
-	keycloakSDK := NewKeycloakSDK(ctx, "http://localhost:8080/auth", "admin", "admin")
+	keycloakSDK, err := NewKeycloakSDK(ctx, "http://localhost:8080/auth", "admin", "admin")
+	if err != nil {
+		log.Println(err)
+	}
 
 	realm, err := keycloakSDK.CreateRealm("Realm_SDK", "Realm created by SDK", true)
 	if err != nil {
@@ -97,12 +101,14 @@ func (k *KeycloakSDK) CreateRealm(realm, displayName string, enable bool) (*Real
 
 	json, err := json.Marshal(&newRealm)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
 	payload := bytes.NewBuffer(json)
 	_, err = request("POST", k.BaseURL, "/admin/realms", "application/json", k.Session.AccessToken, payload)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
@@ -113,12 +119,14 @@ func (k *KeycloakSDK) FetchRealm(realm string) (*Realm, error) {
 	uri := fmt.Sprintf("/admin/realms/%s", realm)
 	response, err := request("GET", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
 	var r Realm
 	err = json.Unmarshal(response, &r)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
@@ -129,6 +137,7 @@ func (k *KeycloakSDK) DeleteRealm(realm string) error {
 	uri := fmt.Sprintf("/admin/realms/%s", realm)
 	_, err := request("DELETE", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -152,6 +161,7 @@ func auth(ctx context.Context, baseURL, username, password string) (*AuthRespons
 	uri := fmt.Sprintf("%s/realms/master/protocol/openid-connect/token", baseURL)
 	req, err := http.NewRequestWithContext(ctx, "POST", uri, strings.NewReader(data.Encode()))
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -160,10 +170,12 @@ func auth(ctx context.Context, baseURL, username, password string) (*AuthRespons
 	resp, err := httpClient.Do(req)
 	statusCode := resp.StatusCode
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
 	if statusCode < 200 || statusCode > 299 {
+		log.Println(err)
 		return nil, errors.New("[ERROR]")
 	}
 
@@ -180,6 +192,7 @@ func request(method, baseURI, uri, contentType, token string, payload io.Reader)
 	url := fmt.Sprintf("%s%s", baseURI, uri)
 	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
@@ -191,6 +204,7 @@ func request(method, baseURI, uri, contentType, token string, payload io.Reader)
 	resp, err := httpClient.Do(req)
 	statusCode := resp.StatusCode
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
