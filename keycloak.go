@@ -16,6 +16,29 @@ import (
 	"time"
 )
 
+func main() {
+	ctx := context.Background()
+	keycloakSDK, err := NewKeycloakSDK(ctx, "http://localhost:8080/auth", "admin", "admin")
+	if err != nil {
+		log.Println(err)
+	}
+
+	realm, err := keycloakSDK.CreateRealm("Realm_SDK", "Realm created by SDK", true)
+	if err != nil {
+		log.Println(err)
+	}
+
+	fetchRealm, err := keycloakSDK.FetchRealm(realm.Realm)
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = keycloakSDK.DeleteRealm(fetchRealm.Realm)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 type AuthRequest struct {
 	ClientID  string
 	Username  string
@@ -59,29 +82,6 @@ func NewKeycloakSDK(ctx context.Context, baseURL, username, password string) (*K
 		Session:  session,
 	}
 	return keycloakSDK, nil
-}
-
-func main() {
-	ctx := context.Background()
-	keycloakSDK, err := NewKeycloakSDK(ctx, "http://localhost:8080/auth", "admin", "admin")
-	if err != nil {
-		log.Println(err)
-	}
-
-	realm, err := keycloakSDK.CreateRealm("Realm_SDK", "Realm created by SDK", true)
-	if err != nil {
-		log.Println(err)
-	}
-
-	fetchRealm, err := keycloakSDK.FetchRealm(realm.Realm)
-	if err != nil {
-		log.Println(err)
-	}
-
-	err = keycloakSDK.DeleteRealm(fetchRealm.Realm)
-	if err != nil {
-		log.Println(err)
-	}
 }
 
 type Realm struct {
