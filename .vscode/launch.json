@@ -6,7 +6,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/keycloak.go",
+            "program": "${workspaceFolder}/main.go",
             "env": {
                 "PORT": "4000",
                 "ENVIRONMENT": "Development",
