@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/jailtonjunior94/keycloak-sdk-go/shared"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -20,6 +21,24 @@ type ClientScope struct {
 type ClientScopeAttributes struct {
 	ConsentScreenText      string `json:"consent.screen.text"`
 	DisplayOnConsentScreen string `json:"display.on.consent.screen"`
+}
+
+func (k *KeycloakSDK) ClientScope(realm string) ([]*ClientScope, error) {
+	uri := fmt.Sprintf("/admin/realms/%s/client-scopes", realm)
+	response, err := request("GET", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	var c []*ClientScope
+	err = json.Unmarshal(response, &c)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func (k *KeycloakSDK) FetchClientScope(realm, id string) (*ClientScope, error) {
@@ -41,6 +60,15 @@ func (k *KeycloakSDK) FetchClientScope(realm, id string) (*ClientScope, error) {
 }
 
 func (k *KeycloakSDK) CreateClientScope(realm, name, description, protocol string) (*ClientScope, error) {
+	scopes, _ := k.ClientScope(realm)
+	filterByName := shared.Filter(scopes, func(v *ClientScope) bool {
+		return v.Name == name
+	})
+
+	if len(filterByName) > 0 {
+		return filterByName[0], nil
+	}
+
 	new := &ClientScope{
 		ID:          uuid.NewV4().String(),
 		Name:        name,

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/jailtonjunior94/keycloak-sdk-go/shared"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -24,6 +25,24 @@ type Client struct {
 	RedirectUris                 []string      `json:"redirectUris"`
 	WebOrigins                   []string      `json:"webOrigins"`
 	ClientSecret                 *ClientSecret `json:"clientSecret,omitempty"`
+}
+
+func (k *KeycloakSDK) Clients(realm string) ([]*Client, error) {
+	uri := fmt.Sprintf("/admin/realms/%s/clients", realm)
+	response, err := request("GET", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	var c []*Client
+	err = json.Unmarshal(response, &c)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func (k *KeycloakSDK) FetchClient(realm, id string) (*Client, error) {
@@ -52,6 +71,15 @@ func (k *KeycloakSDK) FetchClient(realm, id string) (*Client, error) {
 }
 
 func (k *KeycloakSDK) CreateClient(realm, clientID, name, description, protocol, baseURL, clientScope string, publicClient, serviceAccountsEnabled bool) (*Client, error) {
+	clients, _ := k.Clients(realm)
+	filterByName := shared.Filter(clients, func(v *Client) bool {
+		return v.ClientID == clientID
+	})
+
+	if len(filterByName) > 0 {
+		return filterByName[0], nil
+	}
+
 	new := &Client{
 		ID:                           uuid.NewV4().String(),
 		ClientID:                     clientID,

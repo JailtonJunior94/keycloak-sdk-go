@@ -33,6 +33,11 @@ func (k *KeycloakSDK) FetchRealm(realm string) (*Realm, error) {
 }
 
 func (k *KeycloakSDK) CreateRealm(realm, displayName string, enable bool) (*Realm, error) {
+	exist, _ := k.FetchRealm(realm)
+	if exist != nil {
+		return exist, nil
+	}
+
 	newRealm := &Realm{
 		ID:          realm,
 		Realm:       realm,
