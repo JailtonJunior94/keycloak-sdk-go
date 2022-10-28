@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/jailtonjunior94/keycloak-sdk-go/shared"
+
 	uuid "github.com/satori/go.uuid"
 )
 
