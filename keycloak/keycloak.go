@@ -118,7 +118,6 @@ func (k *KeycloakSDK) request(method, baseURI, uri, contentType, token string, p
 	}
 
 	resp, err := k.HTTPClient.Do(req)
-	statusCode := resp.StatusCode
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -128,9 +127,9 @@ func (k *KeycloakSDK) request(method, baseURI, uri, contentType, token string, p
 		defer resp.Body.Close()
 	}
 
-	if statusCode < 200 || statusCode > 299 {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		b, _ := ioutil.ReadAll(resp.Body)
-		return nil, errors.New(fmt.Sprintf("[ERROR] [StatusCode] [%d] [Detail] [%s]", statusCode, string(b)))
+		return nil, errors.New(fmt.Sprintf("[ERROR] [StatusCode] [%d] [Detail] [%s]", resp.StatusCode, string(b)))
 	}
 
 	bytes, err := ioutil.ReadAll(resp.Body)
