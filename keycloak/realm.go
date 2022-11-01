@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 )
 
 type Realm struct {
@@ -16,7 +17,7 @@ type Realm struct {
 
 func (k *KeycloakSDK) FetchRealm(realm string) (*Realm, error) {
 	uri := fmt.Sprintf("/admin/realms/%s", realm)
-	response, err := request("GET", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
+	response, err := k.request(http.MethodGet, k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -52,7 +53,7 @@ func (k *KeycloakSDK) CreateRealm(realm, displayName string, enable bool) (*Real
 	}
 
 	payload := bytes.NewBuffer(json)
-	_, err = request("POST", k.BaseURL, "/admin/realms", "application/json", k.Session.AccessToken, payload)
+	_, err = k.request("POST", k.BaseURL, "/admin/realms", "application/json", k.Session.AccessToken, payload)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -77,7 +78,7 @@ func (k *KeycloakSDK) UpdateRealm(id, realm, displayName string, enable bool) (*
 
 	uri := fmt.Sprintf("/admin/realms/%s", id)
 	payload := bytes.NewBuffer(json)
-	_, err = request("PUT", k.BaseURL, uri, "application/json", k.Session.AccessToken, payload)
+	_, err = k.request(http.MethodPut, k.BaseURL, uri, "application/json", k.Session.AccessToken, payload)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -88,7 +89,7 @@ func (k *KeycloakSDK) UpdateRealm(id, realm, displayName string, enable bool) (*
 
 func (k *KeycloakSDK) DeleteRealm(realm string) error {
 	uri := fmt.Sprintf("/admin/realms/%s", realm)
-	_, err := request("DELETE", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
+	_, err := k.request(http.MethodDelete, k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
 	if err != nil {
 		log.Println(err)
 		return err

@@ -34,33 +34,34 @@ type AuthResponse struct {
 }
 
 type KeycloakSDK struct {
-	BaseURL  string
-	Username string
-	Password string
-	Context  context.Context
-	Session  *AuthResponse
+	BaseURL    string
+	Username   string
+	Password   string
+	Context    context.Context
+	Session    *AuthResponse
+	HTTPClient *http.Client
 }
 
-var httpClient = &http.Client{Timeout: 30 * time.Second}
-
 func NewKeycloakSDK(ctx context.Context, baseURL, username, password string) (*KeycloakSDK, error) {
-	session, err := auth(ctx, baseURL, username, password)
+	keycloakSDK := &KeycloakSDK{
+		BaseURL:    baseURL,
+		Username:   username,
+		Password:   password,
+		Context:    ctx,
+		HTTPClient: &http.Client{Timeout: 60 * time.Second},
+	}
+
+	session, err := keycloakSDK.auth(baseURL, username, password)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
+	keycloakSDK.Session = session
 
-	keycloakSDK := &KeycloakSDK{
-		BaseURL:  baseURL,
-		Username: username,
-		Password: password,
-		Context:  ctx,
-		Session:  session,
-	}
 	return keycloakSDK, nil
 }
 
-func auth(ctx context.Context, baseURL, username, password string) (*AuthResponse, error) {
+func (k *KeycloakSDK) auth(baseURL, username, password string) (*AuthResponse, error) {
 	authReq := &AuthRequest{
 		Username:  username,
 		Password:  password,
@@ -75,7 +76,7 @@ func auth(ctx context.Context, baseURL, username, password string) (*AuthRespons
 	data.Set("grant_type", authReq.GrantType)
 
 	uri := fmt.Sprintf("%s/realms/master/protocol/openid-connect/token", baseURL)
-	req, err := http.NewRequestWithContext(ctx, "POST", uri, strings.NewReader(data.Encode()))
+	req, err := http.NewRequestWithContext(k.Context, http.MethodPost, uri, strings.NewReader(data.Encode()))
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -83,14 +84,13 @@ func auth(ctx context.Context, baseURL, username, password string) (*AuthRespons
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
-	resp, err := httpClient.Do(req)
-	statusCode := resp.StatusCode
+	resp, err := k.HTTPClient.Do(req)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
-	if statusCode < 200 || statusCode > 299 {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		log.Println(err)
 		return nil, errors.New("[ERROR]")
 	}
@@ -104,9 +104,9 @@ func auth(ctx context.Context, baseURL, username, password string) (*AuthRespons
 	return &authResponse, nil
 }
 
-func request(method, baseURI, uri, contentType, token string, payload io.Reader) ([]byte, error) {
+func (k *KeycloakSDK) request(method, baseURI, uri, contentType, token string, payload io.Reader) ([]byte, error) {
 	url := fmt.Sprintf("%s%s", baseURI, uri)
-	req, err := http.NewRequest(method, url, payload)
+	req, err := http.NewRequestWithContext(k.Context, method, url, payload)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -117,7 +117,7 @@ func request(method, baseURI, uri, contentType, token string, payload io.Reader)
 		req.Header.Set("Authorization", fmt.Sprintf("%s%s", "Bearer ", token))
 	}
 
-	resp, err := httpClient.Do(req)
+	resp, err := k.HTTPClient.Do(req)
 	statusCode := resp.StatusCode
 	if err != nil {
 		log.Println(err)

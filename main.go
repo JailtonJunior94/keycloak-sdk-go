@@ -3,15 +3,18 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/jailtonjunior94/keycloak-sdk-go/keycloak"
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
 	keycloakSDK, err := keycloak.NewKeycloakSDK(ctx, "http://localhost:8080/auth", "admin", "admin")
 	if err != nil {
-		log.Println(err)
+		panic(err)
 	}
 
 	realm, err := keycloakSDK.CreateRealm("Realm_SDK", "Realm created by SDK", true)

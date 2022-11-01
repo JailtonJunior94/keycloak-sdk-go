@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/jailtonjunior94/keycloak-sdk-go/shared"
 	uuid "github.com/satori/go.uuid"
@@ -25,7 +26,7 @@ type ClientScopeAttributes struct {
 
 func (k *KeycloakSDK) ClientScope(realm string) ([]*ClientScope, error) {
 	uri := fmt.Sprintf("/admin/realms/%s/client-scopes", realm)
-	response, err := request("GET", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
+	response, err := k.request(http.MethodGet, k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -43,7 +44,7 @@ func (k *KeycloakSDK) ClientScope(realm string) ([]*ClientScope, error) {
 
 func (k *KeycloakSDK) FetchClientScope(realm, id string) (*ClientScope, error) {
 	uri := fmt.Sprintf("/admin/realms/%s/client-scopes/%s", realm, id)
-	response, err := request("GET", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
+	response, err := k.request(http.MethodGet, k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -88,7 +89,7 @@ func (k *KeycloakSDK) CreateClientScope(realm, name, description, protocol strin
 
 	uri := fmt.Sprintf("/admin/realms/%s/client-scopes", realm)
 	payload := bytes.NewBuffer(json)
-	_, err = request("POST", k.BaseURL, uri, "application/json", k.Session.AccessToken, payload)
+	_, err = k.request(http.MethodPost, k.BaseURL, uri, "application/json", k.Session.AccessToken, payload)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -116,7 +117,7 @@ func (k *KeycloakSDK) UpdateClientScope(realm, id, name, description, protocol s
 
 	uri := fmt.Sprintf("/admin/realms/%s/client-scopes/%s", realm, id)
 	payload := bytes.NewBuffer(json)
-	_, err = request("PUT", k.BaseURL, uri, "application/json", k.Session.AccessToken, payload)
+	_, err = k.request(http.MethodPut, k.BaseURL, uri, "application/json", k.Session.AccessToken, payload)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -127,7 +128,7 @@ func (k *KeycloakSDK) UpdateClientScope(realm, id, name, description, protocol s
 
 func (k *KeycloakSDK) DeleteClientScope(realm, id string) error {
 	uri := fmt.Sprintf("/admin/realms/%s/client-scopes/%s", realm, id)
-	_, err := request("DELETE", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
+	_, err := k.request(http.MethodDelete, k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
 	if err != nil {
 		log.Println(err)
 		return err

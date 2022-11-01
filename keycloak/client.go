@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/jailtonjunior94/keycloak-sdk-go/shared"
 
@@ -30,7 +31,7 @@ type Client struct {
 
 func (k *KeycloakSDK) Clients(realm string) ([]*Client, error) {
 	uri := fmt.Sprintf("/admin/realms/%s/clients", realm)
-	response, err := request("GET", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
+	response, err := k.request(http.MethodGet, k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -48,7 +49,7 @@ func (k *KeycloakSDK) Clients(realm string) ([]*Client, error) {
 
 func (k *KeycloakSDK) FetchClient(realm, id string) (*Client, error) {
 	uri := fmt.Sprintf("/admin/realms/%s/clients/%s", realm, id)
-	response, err := request("GET", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
+	response, err := k.request(http.MethodGet, k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -105,7 +106,7 @@ func (k *KeycloakSDK) CreateClient(realm, clientID, name, description, protocol,
 
 	uri := fmt.Sprintf("/admin/realms/%s/clients", realm)
 	payload := bytes.NewBuffer(json)
-	_, err = request("POST", k.BaseURL, uri, "application/json", k.Session.AccessToken, payload)
+	_, err = k.request(http.MethodPost, k.BaseURL, uri, "application/json", k.Session.AccessToken, payload)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -138,7 +139,7 @@ func (k *KeycloakSDK) UpdateClient(realm, id, clientID, name, description, proto
 
 	uri := fmt.Sprintf("/admin/realms/%s/clients/%s", realm, id)
 	payload := bytes.NewBuffer(json)
-	_, err = request("PUT", k.BaseURL, uri, "application/json", k.Session.AccessToken, payload)
+	_, err = k.request(http.MethodPut, k.BaseURL, uri, "application/json", k.Session.AccessToken, payload)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -149,7 +150,7 @@ func (k *KeycloakSDK) UpdateClient(realm, id, clientID, name, description, proto
 
 func (k *KeycloakSDK) DeleteClient(realm, id string) error {
 	uri := fmt.Sprintf("/admin/realms/%s/clients/%s", realm, id)
-	_, err := request("DELETE", k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
+	_, err := k.request(http.MethodDelete, k.BaseURL, uri, "application/json", k.Session.AccessToken, nil)
 	if err != nil {
 		log.Println(err)
 		return err
