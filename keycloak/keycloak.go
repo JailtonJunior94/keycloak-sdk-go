@@ -1,7 +1,6 @@
 package keycloak
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -37,17 +36,15 @@ type KeycloakSDK struct {
 	BaseURL    string
 	Username   string
 	Password   string
-	Context    context.Context
 	Session    *AuthResponse
 	HTTPClient *http.Client
 }
 
-func NewKeycloakSDK(ctx context.Context, baseURL, username, password string) (*KeycloakSDK, error) {
+func NewKeycloakSDK(baseURL, username, password string) (*KeycloakSDK, error) {
 	keycloakSDK := &KeycloakSDK{
 		BaseURL:    baseURL,
 		Username:   username,
 		Password:   password,
-		Context:    ctx,
 		HTTPClient: &http.Client{Timeout: 60 * time.Second},
 	}
 
@@ -76,7 +73,7 @@ func (k *KeycloakSDK) auth(baseURL, username, password string) (*AuthResponse, e
 	data.Set("grant_type", authReq.GrantType)
 
 	uri := fmt.Sprintf("%s/realms/master/protocol/openid-connect/token", baseURL)
-	req, err := http.NewRequestWithContext(k.Context, http.MethodPost, uri, strings.NewReader(data.Encode()))
+	req, err := http.NewRequest(http.MethodPost, uri, strings.NewReader(data.Encode()))
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -106,7 +103,7 @@ func (k *KeycloakSDK) auth(baseURL, username, password string) (*AuthResponse, e
 
 func (k *KeycloakSDK) request(method, baseURI, uri, contentType, token string, payload io.Reader) ([]byte, error) {
 	url := fmt.Sprintf("%s%s", baseURI, uri)
-	req, err := http.NewRequestWithContext(k.Context, method, url, payload)
+	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
 		log.Println(err)
 		return nil, err

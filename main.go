@@ -1,18 +1,13 @@
 package main
 
 import (
-	"context"
 	"log"
-	"time"
 
 	"github.com/jailtonjunior94/keycloak-sdk-go/keycloak"
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-
-	keycloakSDK, err := keycloak.NewKeycloakSDK(ctx, "http://localhost:8080/auth", "admin", "admin")
+	keycloakSDK, err := keycloak.NewKeycloakSDK("http://localhost:8080/auth", "admin", "admin")
 	if err != nil {
 		panic(err)
 	}
