@@ -2,6 +2,6 @@
 ```
 git add .
 git commit -m "descrição do commit"
-git tag v0.1.0
-git push origin v0.1.0
+git tag v1.0.3
+git push origin v1.0.3
 ```

@@ -1,6 +1,7 @@
 package keycloak
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -41,11 +42,15 @@ type KeycloakSDK struct {
 }
 
 func NewKeycloakSDK(baseURL, username, password string) (*KeycloakSDK, error) {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
 	keycloakSDK := &KeycloakSDK{
 		BaseURL:    baseURL,
 		Username:   username,
 		Password:   password,
-		HTTPClient: &http.Client{Timeout: 60 * time.Second},
+		HTTPClient: &http.Client{Timeout: 60 * time.Second, Transport: tr},
 	}
 
 	session, err := keycloakSDK.auth(baseURL, username, password)
