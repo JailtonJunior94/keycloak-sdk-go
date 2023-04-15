@@ -1,0 +1,55 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:14.2-alpine
+    container_name: keycloak-postgres
+    command:
+      [
+        "postgres",
+        "-c",
+        "log_statement=all",
+        "-c",
+        "log_destination=stderr"
+      ]
+    ports:
+      - '5432:5432'
+    volumes:
+      - keycloak-postgres:/var/lib/postgresql/data
+      - ./scripts/postgres:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DATABASES: "keycloak"
+      POSTGRES_PASSWORD: "postgres"
+    networks:
+      - keycloak_network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.0.2
+    container_name: keycloak
+    command:
+      [
+        "start-dev",
+        "--auto-build",
+        "--db=postgres"
+      ]
+    ports:
+      - 8080:8080
+      - 9990:9990
+    environment:
+      KC_DB: keycloak
+      KC_DB_URL: 'jdbc:postgresql://postgres/keycloak'
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_DB_SCHEMA: public
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    networks:
+      - keycloak_network
+    depends_on:
+      - postgres
+
+volumes:
+  keycloak-postgres: null
+networks:
+  keycloak_network:
+    driver: bridge

@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	keycloakSDK, err := keycloak.NewKeycloakSDK("https://qa-aks-conectcar-keycloak.conectcar.com/auth", "admin", "@C0nectC@r@2021")
+	keycloakSDK, err := keycloak.NewKeycloakSDK("http://localhost:8080", "admin", "admin")
 	if err != nil {
 		panic(err)
 	}
