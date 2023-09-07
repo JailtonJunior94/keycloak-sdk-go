@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/jailtonjunior94/keycloak-sdk-go/keycloak"
+	"github.com/jailtonjunior94/keycloak-sdk-go/pkg/keycloak"
 )
 
 func main() {

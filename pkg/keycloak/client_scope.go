@@ -7,7 +7,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/jailtonjunior94/keycloak-sdk-go/shared"
+	"github.com/jailtonjunior94/keycloak-sdk-go/pkg/funcs"
+
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -62,7 +63,7 @@ func (k *KeycloakSDK) FetchClientScope(realm, id string) (*ClientScope, error) {
 
 func (k *KeycloakSDK) CreateClientScope(realm, name, description, protocol string) (*ClientScope, error) {
 	scopes, _ := k.ClientScope(realm)
-	filterByName := shared.Filter(scopes, func(v *ClientScope) bool {
+	filterByName := funcs.Filter(scopes, func(v *ClientScope) bool {
 		return v.Name == name
 	})
 

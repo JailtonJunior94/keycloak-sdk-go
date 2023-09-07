@@ -1,4 +1,5 @@
 version: '3'
+
 services:
   postgres:
     image: postgres:14.2-alpine
@@ -50,6 +51,7 @@ services:
 
 volumes:
   keycloak-postgres: null
+
 networks:
   keycloak_network:
     driver: bridge

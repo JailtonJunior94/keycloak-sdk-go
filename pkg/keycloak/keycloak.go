@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -130,10 +129,10 @@ func (k *KeycloakSDK) request(method, baseURI, uri, contentType, token string, p
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		return nil, errors.New(fmt.Sprintf("[ERROR] [StatusCode] [%d] [Detail] [%s]", resp.StatusCode, string(b)))
 	}
 
-	bytes, err := ioutil.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	return bytes, err
 }

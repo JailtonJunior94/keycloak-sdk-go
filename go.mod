@@ -1,6 +1,6 @@
 module github.com/jailtonjunior94/keycloak-sdk-go
 
-go 1.18
+go 1.21.1
 
 require github.com/satori/go.uuid v1.2.0
 

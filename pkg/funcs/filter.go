@@ -1,4 +1,4 @@
-package shared
+package funcs
 
 func Filter[T any](slice []T, f func(T) bool) []T {
 	var n []T
